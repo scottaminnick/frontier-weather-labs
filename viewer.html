@@ -23,7 +23,7 @@
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         overflow: hidden;
-        border: 1px solid #d1d9e6;
+        border: 1px solid rgba(29,74,90,0.15);
     }
 
     .header {
@@ -38,8 +38,8 @@
 
     .controls {
         padding: 25px;
-        background: #f8f9fa;
-        border-bottom: 2px solid #e9ecef;
+        background: #F5F0E8;
+        border-bottom: 2px solid #EDE8DC;
     }
 
     .input-row {
@@ -58,7 +58,7 @@
 
     label {
         font-weight: 600;
-        color: #495057;
+        color: #2A6275;
         font-size: 0.95em;
     }
 
@@ -116,10 +116,10 @@
     .station-header {
         font-size: 1.8em;
         font-weight: bold;
-        color: #2c3e50;
+        color: #1D4A5A;
         margin-bottom: 20px;
         padding: 15px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        background: linear-gradient(135deg, #F5F0E8 0%, #EDE8DC 100%);
         border-radius: 8px;
         border-left: 5px solid #2A6275;
     }
@@ -138,7 +138,7 @@
     }
 
     th {
-        background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+        background: linear-gradient(135deg, #2A6275 0%, #4A6572 100%);
         color: white;
         font-weight: 600;
         position: sticky;
@@ -156,27 +156,27 @@
     }
     
     th:first-child {
-        background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+        background: linear-gradient(135deg, #2A6275 0%, #4A6572 100%);
         color: white;
         z-index: 11;
     }
     
     tr:nth-child(even) td:first-child {
-        background-color: #f8f9fa;
+        background-color: #F5F0E8;
     }
     
     tr:hover td:first-child {
-        background-color: #e9ecef;
+        background-color: #EDE8DC;
     }
 
-    tr:nth-child(even) { background-color: #f8f9fa; }
-    tr:hover { background-color: #e9ecef; }
+    tr:nth-child(even) { background-color: #F5F0E8; }
+    tr:hover { background-color: #EDE8DC; }
     
     .bottom-time-row th {
         position: sticky;
         bottom: 0;
         z-index: 10;
-        background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+        background: linear-gradient(135deg, #2A6275 0%, #4A6572 100%);
         color: white;
         font-size: 0.85em;
     }
@@ -184,13 +184,13 @@
     .bottom-time-row th:first-child {
         left: 0;
         z-index: 12;
-        background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+        background: linear-gradient(135deg, #2A6275 0%, #4A6572 100%);
         font-weight: 600;
         color: white;
     }
 
     .section-header {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+        background: linear-gradient(135deg, #1D4A5A 0%, #34495e 100%) !important;
         color: white !important;
         font-size: 1.05em;
     }
@@ -201,7 +201,7 @@
     .low-ifr { background-color: #d946ef; }
     .temp-hot { background-color: #ff6b6b; color: white; }
     .temp-cold { background-color: #4dabf7; color: white; }
-    .high-prob { background-color: #ffc107; color: #212529; font-weight: bold; }
+    .high-prob { background-color: #C2622D; color: #212529; font-weight: bold; }
     .precip-yes { background-color: #17a2b8; color: white; }
 
     .product-toggle {
@@ -285,7 +285,7 @@
     .sd-row td {
         font-size: 0.75em;
         color: #555;
-        background: #f0f4ff !important;
+        background: #EDE8DC !important;
         border-top: none;
         padding: 3px 4px;
     }
@@ -293,7 +293,7 @@
     .sd-row th {
         font-size: 0.75em;
         color: #aaa;
-        background: #f0f4ff !important;
+        background: #EDE8DC !important;
         border-top: none;
         font-style: italic;
         font-weight: normal;
@@ -315,8 +315,8 @@
     }
 
     .disclaimer {
-        background: #fff3cd;
-        border-top: 3px solid #ffc107;
+        background: #FDF0E8;
+        border-top: 3px solid #C2622D;
         padding: 20px;
         text-align: center;
         font-size: 0.9em;
@@ -355,7 +355,7 @@
     .autocomplete-item {
         padding: 12px 16px;
         cursor: pointer;
-        border-bottom: 1px solid #e9ecef;
+        border-bottom: 1px solid #EDE8DC;
         transition: background-color 0.2s;
     }
 
@@ -364,18 +364,18 @@
     }
 
     .autocomplete-item:hover, .autocomplete-item.active {
-        background-color: #f0f4ff;
+        background-color: #EDE8DC;
     }
 
     .autocomplete-item .airport-name {
         font-weight: 600;
-        color: #2c3e50;
+        color: #1D4A5A;
         font-size: 0.95em;
     }
 
     .autocomplete-item .airport-details {
         font-size: 0.85em;
-        color: #6c757d;
+        color: #4A6572;
         margin-top: 2px;
     }
 
@@ -389,14 +389,14 @@
     .autocomplete-loading {
         padding: 12px 16px;
         text-align: center;
-        color: #6c757d;
+        color: #4A6572;
         font-size: 0.9em;
     }
 
     .autocomplete-no-results {
         padding: 12px 16px;
         text-align: center;
-        color: #6c757d;
+        color: #4A6572;
         font-size: 0.9em;
     }
 
@@ -406,7 +406,7 @@
         left: 0;
         right: 0;
         background: white;
-        border-top: 2px solid #d1d9e6;
+        border-top: 2px solid rgba(29,74,90,0.15);
         padding: 8px 0;
         z-index: 100;
         box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
@@ -417,7 +417,7 @@
         margin: 0 8px;
         height: 12px;
         border-radius: 6px;
-        background: #e9ecef;
+        background: #EDE8DC;
         outline: none;
         -webkit-appearance: slider-horizontal;
         appearance: slider-horizontal;
@@ -524,7 +524,7 @@
             </div>
         </div>
         <div id="nbmControls" class="nbm-controls">
-            <span style="font-weight:600; color:#495057; font-size:0.95em;">NBM Product:</span>
+            <span style="font-weight:600; color:#2A6275; font-size:0.95em;">NBM Product:</span>
             <div class="nbm-product-row">
                 <button class="nbm-product-btn active" id="nbmBtnNBH" onclick="setNBMProduct('NBH')">NBH <span style="font-weight:normal;font-size:0.85em;">(25-hr hourly)</span></button>
                 <button class="nbm-product-btn" id="nbmBtnNBS" onclick="setNBMProduct('NBS')">NBS <span style="font-weight:normal;font-size:0.85em;">(72-hr 3-hrly)</span></button>
@@ -552,10 +552,10 @@
 </div>
 
 
-<div id="legend" style="display:none; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px; font-size: 0.9em;">
+<div id="legend" style="display:none; background: #F5F0E8; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px; font-size: 0.9em;">
     <div style="display: flex; justify-content: space-between; gap: 30px; flex-wrap: wrap;">
         <div>
-            <h4 style="margin-top: 0; color: #2c3e50;">Data Values</h4>
+            <h4 style="margin-top: 0; color: #1D4A5A;">Data Values</h4>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>999</strong> = Not part of guidance (NOAA does not provide)</li>
                 <li><strong>%</strong> suffix = Probability/Percentage value</li>
@@ -563,7 +563,7 @@
             </ul>
         </div>
         <div>
-            <h4 style="margin-top: 0; color: #2c3e50;">Temperature Colors</h4>
+            <h4 style="margin-top: 0; color: #1D4A5A;">Temperature Colors</h4>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Temperature</strong> = Highlighted for extreme values:
                     <ul style="margin: 5px 0; padding-left: 20px;">
@@ -582,7 +582,7 @@
             </ul>
         </div>
         <div>
-            <h4 style="margin-top: 0; color: #2c3e50;">Flight Categories</h4>
+            <h4 style="margin-top: 0; color: #1D4A5A;">Flight Categories</h4>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px;">VFR</span> = Visual Flight Rules (best conditions)</li>
                 <li><span style="background: #0066cc; color: white; padding: 2px 6px; border-radius: 3px;">MVFR</span> = Marginal VFR</li>
@@ -591,15 +591,15 @@
             </ul>
         </div>
         <div>
-            <h4 style="margin-top: 0; color: #2c3e50;">Highlighted Values</h4>
+            <h4 style="margin-top: 0; color: #1D4A5A;">Highlighted Values</h4>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><span style="background: #fff3cd; padding: 2px 6px; border-radius: 3px;">Yellow highlight</span> = Significant value (≥50% probability, ≥20kt wind, ≥90% humidity, ≤3°F spread, ≥3/10 convection)</li>
+                <li><span style="background: #FDF0E8; padding: 2px 6px; border-radius: 3px;">Yellow highlight</span> = Significant value (≥50% probability, ≥20kt wind, ≥90% humidity, ≤3°F spread, ≥3/10 convection)</li>
                 <li><span style="background: #d3d3d3; padding: 2px 6px; border-radius: 3px;">Gray cell</span> = Current METAR observation</li>
             </ul>
         </div>
     </div>
     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-        <h4 style="margin-top: 0; color: #2c3e50;">📚 Documentation & References</h4>
+        <h4 style="margin-top: 0; color: #1D4A5A;">📚 Documentation & References</h4>
         <ul style="margin: 10px 0; padding-left: 20px;">
             <li><a href="https://vlab.noaa.gov/web/mdl/lamp" target="_blank" style="color: #2A6275; text-decoration: none;">Localized Aviation MOS Program (LAMP)</a> - Official NOAA LAMP documentation</li>
         </ul>
@@ -1561,14 +1561,14 @@
         let html = `
             <div class="station-header">
                 ${stationId} - ${stationName}
-                <div style="font-size: 0.6em; color: #6c757d; margin-top: 5px;">
+                <div style="font-size: 0.6em; color: #4A6572; margin-top: 5px;">
                     ${hours.length} hour forecast | ${new Date().toLocaleTimeString()}
                     ${runTimeDisplay ? `<br>${runTimeDisplay}` : ''}
                 </div>
             </div>
             <table>
                 <tr><th style="width: 120px;">Element</th>${currentHeader}${hours.map((h, i) => `<th style="font-size: 0.85em;">${getUTCDateAndHour(modelRunTime, i)}</th>`).join('')}</tr>
-                <tr style="background: #f8f9fa;"><th style="font-size: 0.85em; color: white;">${tzDisplay}</th>${currentLocalTime}${hours.map((h, i) => `<th style="font-size: 0.85em; color: white;">${getLocalDateAndTime(modelRunTime, i, stationTzOffset)}</th>`).join('')}</tr>
+                <tr style="background: #F5F0E8;"><th style="font-size: 0.85em; color: white;">${tzDisplay}</th>${currentLocalTime}${hours.map((h, i) => `<th style="font-size: 0.85em; color: white;">${getLocalDateAndTime(modelRunTime, i, stationTzOffset)}</th>`).join('')}</tr>
                 <tr class="section-header"><th colspan="${hours.length + (metarObs ? 2 : 1)}">FLIGHT CONDITIONS</th></tr>
         `;
 
@@ -2116,8 +2116,8 @@
         }
 
         // Add bottom time row for reference
-        html += `<tr class="bottom-time-row" style="background: #f8f9fa;"><th style="font-size: 0.85em;">${tzDisplay}</th>${currentLocalTime}${hours.map((h, i) => `<th style="font-size: 0.85em;">${getLocalDateAndTime(modelRunTime, i, stationTzOffset)}</th>`).join('')}</tr>`;
-        html += `<tr style="background: #f8f9fa;"><th>Element</th>${currentHeader}${hours.map((h, i) => `<th style="font-size: 0.85em;">${getUTCDateAndHour(modelRunTime, i)}</th>`).join('')}</tr>`;
+        html += `<tr class="bottom-time-row" style="background: #F5F0E8;"><th style="font-size: 0.85em;">${tzDisplay}</th>${currentLocalTime}${hours.map((h, i) => `<th style="font-size: 0.85em;">${getLocalDateAndTime(modelRunTime, i, stationTzOffset)}</th>`).join('')}</tr>`;
+        html += `<tr style="background: #F5F0E8;"><th>Element</th>${currentHeader}${hours.map((h, i) => `<th style="font-size: 0.85em;">${getUTCDateAndHour(modelRunTime, i)}</th>`).join('')}</tr>`;
         html += '</table>';
 
         status.innerHTML = `✅ Forecast loaded for <strong>${stationId}</strong>`;
@@ -2565,7 +2565,7 @@
         let html = `
             <div class="station-header">
                 ${parsed.stationId} - ${icao} &mdash; ${parsed.stationName || ''}
-                <div style="font-size:0.6em;color:#6c757d;margin-top:5px;">
+                <div style="font-size:0.6em;color:#4A6572;margin-top:5px;">
                     NBM ${product} Forecast | ${new Date().toLocaleTimeString()}
                     ${runTimeDisplay ? '<br>' + runTimeDisplay : ''}
                 </div>
@@ -2577,7 +2577,7 @@
                 </tr>
         `;
         if (subLabels.length > 0) {
-            html += `<tr style="background:#f8f9fa;">
+            html += `<tr style="background:#F5F0E8;">
                 <th style="font-size:0.82em;color:white;">Date</th>
                 ${subLabels.map(l => `<th style="font-size:0.82em;color:white;">${l}</th>`).join('')}
             </tr>`;
@@ -2763,7 +2763,7 @@
         }
 
         // Close table with bottom reference row
-        html += `<tr class="bottom-time-row" style="background: #f8f9fa;">
+        html += `<tr class="bottom-time-row" style="background: #F5F0E8;">
             <th style="font-size:0.85em;">Element</th>
             ${colLabels.map(l => `<th style="font-size:0.82em;">${l}</th>`).join('')}
         </tr>`;
