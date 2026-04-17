@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontier Weather Labs - LAMP Viewer</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #F5F0E8;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        border: 1px solid rgba(29,74,90,0.15);
+    }
+
+    .header {
+        background: linear-gradient(135deg, #1D4A5A 0%, #2A6275 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+    .header p { font-size: 1.1em; opacity: 0.9; }
+
+    .controls {
+        padding: 25px;
+        background: #F5F0E8;
+        border-bottom: 2px solid #EDE8DC;
+    }
+
+    .input-row {
+        display: flex;
+        gap: 15px;
+        align-items: flex-end;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    label {
+        font-weight: 600;
+        color: #2A6275;
+        font-size: 0.95em;
+    }
+
+    input[type="text"], select {
+        padding: 12px 20px;
+        font-size: 1.1em;
+        border: 2px solid #ced4da;
+        border-radius: 8px;
+        font-family: monospace;
+        text-transform: uppercase;
+        min-width: 150px;
+    }
+
+    input[type="text"]:focus, select:focus {
+        outline: none;
+        border-color: #2A6275;
+        box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+    }
+
+    button {
+        padding: 12px 30px;
+        font-size: 1.1em;
+        background: linear-gradient(135deg, #2A6275 0%, #1D4A5A 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(30, 60, 114, 0.4);
+    }
+
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .status {
+        padding: 20px;
+        text-align: center;
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .status.success { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #721c24; }
+    .status.info { background: #d1ecf1; color: #0c5460; }
+
+    .output { padding: 25px; overflow-x: auto; }
+
+    .station-header {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #1D4A5A;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: linear-gradient(135deg, #F5F0E8 0%, #EDE8DC 100%);
+        border-radius: 8px;
+        border-left: 5px solid #2A6275;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9em;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+        padding: 10px 8px;
+        text-align: center;
+        border: 1px solid #dee2e6;
+    }
+
+    th {
+        background: linear-gradient(135deg, #2A6275 0%, #4A6572 100%);
+        color: white;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    /* Sticky first column (element labels) */
+    th:first-child, td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 9;
+        background-color: white;
+        font-weight: 600;
+    }
+
+    th:first-child {
+        background: linear-gradient(135deg, #2A6275 0%, #4A6572 100%);
+        color: white;
+        z-index: 11;
+    }
+
+    tr:nth-child(even) td:first-child {
+        background-color: #F5F0E8;
+    }
+
+    tr:hover td:first-child {
+        background-color: #EDE8DC;
+    }
+
+    tr:nth-child(even) { background-color: #F5F0E8; }
+    tr:hover { background-color: #EDE8DC; }
+
+    .bottom-time-row th {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        background: linear-gradient(135deg, #2A6275 0%, #4A6572 100%);
+        color: white;
+        font-size: 0.85em;
+    }
+
+    .bottom-time-row th:first-child {
+        left: 0;
+        z-index: 12;
+        background: linear-gradient(135deg, #2A6275 0%, #4A6572 100%);
+        font-weight: 600;
+        color: white;
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, #1D4A5A 0%, #34495e 100%) !important;
+        color: white !important;
+        font-size: 1.05em;
+    }
+
+    .vfr { background-color: #28a745; color: white; font-weight: bold; }
+    .mvfr { background-color: #0066cc; color: white; font-weight: bold; }
+    .ifr { background-color: #dc3545; color: white; font-weight: bold; }
+    .low-ifr { background-color: #d946ef; }
+    .temp-hot { background-color: #ff6b6b; color: white; }
+    .temp-cold { background-color: #4dabf7; color: white; }
+    .high-prob { background-color: #C2622D; color: #212529; font-weight: bold; }
+    .precip-yes { background-color: #17a2b8; color: white; }
+
+    .sd-row td {
+        font-size: 0.75em;
+        color: #555;
+        background: #EDE8DC !important;
+        border-top: none;
+        padding: 3px 4px;
+    }
+
+    .sd-row th {
+        font-size: 0.75em;
+        color: #aaa;
+        background: #EDE8DC !important;
+        border-top: none;
+        font-style: italic;
+        font-weight: normal;
+        padding: 3px 4px;
+    }
+
+    .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(0,0,0,0.1);
+        border-top-color: #2A6275;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .disclaimer {
+        background: #FDF0E8;
+        border-top: 3px solid #C2622D;
+        padding: 20px;
+        text-align: center;
+        font-size: 0.9em;
+        color: #856404;
+        line-height: 1.6;
+    }
+
+    .disclaimer strong {
+        color: #664d03;
+    }
+
+    .autocomplete-container {
+        position: relative;
+    }
+
+    .autocomplete-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 2px solid #2A6275;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: none;
+    }
+
+    .autocomplete-dropdown.show {
+        display: block;
+    }
+
+    .autocomplete-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #EDE8DC;
+        transition: background-color 0.2s;
+    }
+
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+
+    .autocomplete-item:hover, .autocomplete-item.active {
+        background-color: #EDE8DC;
+    }
+
+    .autocomplete-item .airport-name {
+        font-weight: 600;
+        color: #1D4A5A;
+        font-size: 0.95em;
+    }
+
+    .autocomplete-item .airport-details {
+        font-size: 0.85em;
+        color: #4A6572;
+        margin-top: 2px;
+    }
+
+    .autocomplete-item .airport-icao {
+        font-family: monospace;
+        font-weight: bold;
+        color: #2A6275;
+        margin-left: 8px;
+    }
+
+    .autocomplete-loading {
+        padding: 12px 16px;
+        text-align: center;
+        color: #4A6572;
+        font-size: 0.9em;
+    }
+
+    .autocomplete-no-results {
+        padding: 12px 16px;
+        text-align: center;
+        color: #4A6572;
+        font-size: 0.9em;
+    }
+
+    #scroll-slider-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 2px solid rgba(29,74,90,0.15);
+        padding: 8px 0;
+        z-index: 100;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #scroll-slider {
+        width: calc(100% - 16px);
+        margin: 0 8px;
+        height: 12px;
+        border-radius: 6px;
+        background: #EDE8DC;
+        outline: none;
+        -webkit-appearance: slider-horizontal;
+        appearance: slider-horizontal;
+        cursor: pointer;
+    }
+
+    #scroll-slider::-webkit-slider-thumb {
+        -webkit-appearance: slider-thumb;
+        appearance: slider-thumb;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2A6275 0%, #1D4A5A 100%);
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(42, 82, 152, 0.3);
+    }
+
+    #scroll-slider::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2A6275 0%, #1D4A5A 100%);
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 6px rgba(42, 82, 152, 0.3);
+    }
+
+    body.has-table {
+        padding-bottom: 50px;
+    }
+
+    @media (max-width: 768px) {
+        #scroll-slider-container {
+            display: none;
+        }
+        body.has-table {
+            padding-bottom: 20px;
+        }
+        .header h1 { font-size: 1.8em; }
+        table { font-size: 0.75em; }
+        th, td { padding: 6px 4px; }
+        .disclaimer { font-size: 0.8em; padding: 15px; }
+        .autocomplete-dropdown {
+            max-height: 200px;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Frontier Weather Labs</h1>
+            <p>LAMP Forecast Viewer</p>
+        </div>
+
+    <div class="controls">
+        <div class="input-row">
+            <div class="input-group">
+                <label for="icao">Airport Search</label>
+                <div class="autocomplete-container">
+                    <input type="text" id="icao" placeholder="Search by name, city, or code..." autocomplete="off">
+                    <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="forecastTime">Forecast Time</label>
+                <select id="forecastTime" onchange="updateHoursOptions()">
+                    <option value="0">Latest</option>
+                    <option value="1">1 hr ago</option>
+                    <option value="2">2 hrs ago</option>
+                    <option value="3">3 hrs ago</option>
+                    <option value="4">4 hrs ago</option>
+                    <option value="5">5 hrs ago</option>
+                    <option value="6">6 hrs ago</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="hours">Hours</label>
+                <select id="hours">
+                    <option value="6">6 hrs</option>
+                    <option value="12" selected>12 hrs</option>
+                    <option value="18">18 hrs</option>
+                    <option value="25">25 hrs</option>
+                    <option value="38" id="hour38option">38 hrs</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="detail">Detail</label>
+                <select id="detail">
+                    <option value="aviation" selected>Aviation</option>
+                    <option value="full">Full</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>&nbsp;</label>
+                <button onclick="fetchForecast()" id="fetchBtn">Get Forecast</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="status" class="status info">
+        Search for an airport by name, city, or enter ICAO code directly (e.g., KMCI, KJFK, KLAX)
+    </div>
+
+    <div id="output" class="output"></div>
+</div>
+
+<div id="scroll-slider-container" style="display: none;">
+    <input type="range" id="scroll-slider" min="0" max="100" value="0">
+</div>
+
+<div class="disclaimer">
+    <strong>⚠️ DISCLAIMER:</strong> LAMP (Localized Aviation MOS Program) guidance does not replace official NWS Aviation products such as the TAF.
+    Several sites available on LAMP do not have TAFs. <strong>Use at your own risk.</strong>
+    Always consult official aviation weather products for flight planning and operational decisions.
+</div>
+
+
+<div id="legend" style="display:none; background: #F5F0E8; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px; font-size: 0.9em;">
+    <div style="display: flex; justify-content: space-between; gap: 30px; flex-wrap: wrap;">
+        <div>
+            <h4 style="margin-top: 0; color: #1D4A5A;">Data Values</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>999</strong> = Not part of guidance (NOAA does not provide)</li>
+                <li><strong>%</strong> suffix = Probability/Percentage value</li>
+                <li><strong>-</strong> = Missing or unavailable data</li>
+            </ul>
+        </div>
+        <div>
+            <h4 style="margin-top: 0; color: #1D4A5A;">Temperature Colors</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Temperature</strong> = Highlighted for extreme values:
+                    <ul style="margin: 5px 0; padding-left: 20px;">
+                        <li><span style="background: #4dabf7; color: white; padding: 2px 6px; border-radius: 3px;">Blue</span> = ≤32°F (freezing)</li>
+                        <li><span style="background: #ff6b6b; color: white; padding: 2px 6px; border-radius: 3px;">Red</span> = ≥85°F (hot)</li>
+                    </ul>
+                </li>
+                <li><strong>Apparent Temperature (Feels-Like)</strong> = Shown in station local time using wind chill danger coloring:
+                    <ul style="margin: 5px 0; padding-left: 20px;">
+                        <li><span style="background: #4488ff; color: white; padding: 2px 6px; border-radius: 3px;">Blue</span> = 0°F or colder (cold)</li>
+                        <li><span style="background: #ffdd00; color: black; padding: 2px 6px; border-radius: 3px;">Yellow</span> = -20 to -34°F (30-min frostbite risk)</li>
+                        <li><span style="background: #ff8800; color: white; padding: 2px 6px; border-radius: 3px;">Orange</span> = -35 to -49°F (10-min frostbite risk)</li>
+                        <li><span style="background: #ff4444; color: white; padding: 2px 6px; border-radius: 3px;">Red</span> = -50°F or colder (5-min extreme danger)</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div>
+            <h4 style="margin-top: 0; color: #1D4A5A;">Flight Categories</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px;">VFR</span> = Visual Flight Rules (best conditions)</li>
+                <li><span style="background: #0066cc; color: white; padding: 2px 6px; border-radius: 3px;">MVFR</span> = Marginal VFR</li>
+                <li><span style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px;">IFR</span> = Instrument Flight Rules</li>
+                <li><span style="background: #d946ef; color: white; padding: 2px 6px; border-radius: 3px;">LIFR</span> = Low IFR (worst conditions)</li>
+            </ul>
+        </div>
+        <div>
+            <h4 style="margin-top: 0; color: #1D4A5A;">Highlighted Values</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><span style="background: #FDF0E8; padding: 2px 6px; border-radius: 3px;">Yellow highlight</span> = Significant value (≥50% probability, ≥20kt wind, ≥90% humidity, ≤3°F spread, ≥3/10 convection)</li>
+                <li><span style="background: #d3d3d3; padding: 2px 6px; border-radius: 3px;">Gray cell</span> = Current METAR observation</li>
+            </ul>
+        </div>
+    </div>
+    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+        <h4 style="margin-top: 0; color: #1D4A5A;">📚 Documentation & References</h4>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+            <li><a href="https://vlab.noaa.gov/web/mdl/lamp" target="_blank" style="color: #2A6275; text-decoration: none;">Localized Aviation MOS Program (LAMP)</a> - Official NOAA LAMP documentation</li>
+        </ul>
+    </div>
+    <button onclick="document.getElementById('legend').style.display='none'" style="margin-top: 15px; padding: 6px 12px; background: #2A6275; color: white; border: none; border-radius: 4px; cursor: pointer;">Close Legend</button>
+</div>
+
+<button onclick="document.getElementById('legend').style.display='block'" style="position: fixed; bottom: 20px; right: 20px; padding: 10px 16px; background: #2A6275; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">📋 Legend/Key</button>
+
+<script>
+    // API endpoint - change this to your deployed backend URL
+    const API_URL = window.location.origin + '/api/lamp';
+
+    // Initialize forecast time dropdown with available runs from database
+    async function initializeForecastTimeDropdown() {
+        const dropdown = document.getElementById('forecastTime');
+        dropdown.innerHTML = '';
+
+        try {
+            // Fetch available runs from backend
+            const response = await fetch(window.location.origin + '/api/lamp/runs');
+            const data = await response.json();
+
+            const runs = data.runs || [];
+
+            if (runs.length === 0) {
+                // Fallback: show current hour only
+                const now = new Date();
+                const currentHour = now.getUTCHours();
+                const modelRunTime = new Date(now);
+                modelRunTime.setUTCMinutes(0, 0, 0);
+
+                const hour = currentHour.toString().padStart(2, '0');
+                const year = modelRunTime.getUTCFullYear();
+                const month = (modelRunTime.getUTCMonth() + 1).toString().padStart(2, '0');
+                const day = modelRunTime.getUTCDate().toString().padStart(2, '0');
+
+                const label = `Latest (${hour}Z ${year}-${month}-${day})`;
+
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = label;
+                option.dataset.synoptic = isSynoptic ? 'true' : 'false';
+                option.dataset.runTime = '';
+                dropdown.appendChild(option);
+                return;
+            }
+
+            // Add each available run to dropdown
+            runs.forEach((run, index) => {
+                const label = index === 0
+                    ? `Latest (${run.display})`
+                    : `${run.display}`;
+
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = label;
+                option.dataset.synoptic = run.is_synoptic ? 'true' : 'false';
+                option.dataset.runTime = run.model_run_time;
+                dropdown.appendChild(option);
+            });
+
+            // Update hours options now that dropdown is populated
+            updateHoursOptions();
+
+        } catch (error) {
+            console.error('Error loading forecast times:', error);
+            // Fallback to simple current hour display
+            const now = new Date();
+            const currentHour = now.getUTCHours();
+            const hour = currentHour.toString().padStart(2, '0');
+            const year = now.getUTCFullYear();
+            const month = (now.getUTCMonth() + 1).toString().padStart(2, '0');
+            const day = now.getUTCDate().toString().padStart(2, '0');
+
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = `Latest (${hour}Z ${year}-${month}-${day})`;
+            option.dataset.synoptic = 'false';
+            option.dataset.runTime = '';
+            dropdown.appendChild(option);
+        }
+    }
+
+    // Autocomplete functionality
+    let searchTimeout;
+    let selectedIndex = -1;
+    let airports = [];
+    let currentIcao = '';
+    let allAirports = []; // Will be loaded from OurAirports API
+    let airportsLoaded = false;
+
+    const icaoInput = document.getElementById('icao');
+    const dropdown = document.getElementById('autocomplete-dropdown');
+
+    // Load comprehensive US airports database from OurAirports (free, no API key needed)
+    async function loadAirportsDatabase() {
+        if (airportsLoaded) return;
+
+        try {
+            // Fetch comprehensive US airports from OurAirports CSV via GitHub
+            const response = await fetch('https://davidmegginson.github.io/ourairports-data/airports.csv');
+            const csvText = await response.text();
+
+            // Simple CSV parser for quoted fields
+            function parseCSVLine(line) {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                result.push(current);
+                return result;
+            }
+
+            // Parse CSV and filter for US airports
+            const lines = csvText.split('\n');
+            const headers = parseCSVLine(lines[0]);
+
+            // Find column indices
+            const identIdx = headers.indexOf('ident');
+            const typeIdx = headers.indexOf('type');
+            const nameIdx = headers.indexOf('name');
+            const municipalityIdx = headers.indexOf('municipality');
+            const isoRegionIdx = headers.indexOf('iso_region');
+            const iataIdx = headers.indexOf('iata_code');
+            const isoCountryIdx = headers.indexOf('iso_country');
+            const latIdx = headers.indexOf('latitude_deg');
+            const lonIdx = headers.indexOf('longitude_deg');
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const cols = parseCSVLine(lines[i]);
+
+                const country = cols[isoCountryIdx];
+                const icao = cols[identIdx];
+                const type = cols[typeIdx];
+
+                // Filter for US airports only (contiguous, Alaska, Hawaii)
+                if (country === 'US' && icao && (icao.startsWith('K') || icao.startsWith('P'))) {
+                    // Include small, medium, and large airports
+                    if (type && type.includes('airport')) {
+                        allAirports.push({
+                            icao: icao,
+                            iata: cols[iataIdx] || '',
+                            name: cols[nameIdx] || '',
+                            city: cols[municipalityIdx] || '',
+                            state: (cols[isoRegionIdx] || '').replace('US-', ''),
+                            lat: parseFloat(cols[latIdx]) || null,
+                            lon: parseFloat(cols[lonIdx]) || null
+                        });
+                    }
+                }
+            }
+
+            airportsLoaded = true;
+            console.log(`Loaded ${allAirports.length} US airports`);
+        } catch (error) {
+            console.error('Failed to load airports database, using fallback list:', error);
+            // Use fallback list if loading fails
+            airportsLoaded = true; // Mark as loaded to use fallback
+        }
+    }
+
+    // Fallback list of major airports (used if API fails)
+    const fallbackAirports = [
+        // Major Hubs
+        {icao: 'KATL', iata: 'ATL', name: 'Hartsfield-Jackson Atlanta Intl', city: 'Atlanta', state: 'GA'},
+        {icao: 'KORD', iata: 'ORD', name: 'Chicago O\'Hare Intl', city: 'Chicago', state: 'IL'},
+        {icao: 'KLAX', iata: 'LAX', name: 'Los Angeles Intl', city: 'Los Angeles', state: 'CA'},
+        {icao: 'KDFW', iata: 'DFW', name: 'Dallas/Fort Worth Intl', city: 'Dallas', state: 'TX'},
+        {icao: 'KDEN', iata: 'DEN', name: 'Denver Intl', city: 'Denver', state: 'CO'},
+        {icao: 'KJFK', iata: 'JFK', name: 'John F Kennedy Intl', city: 'New York', state: 'NY'},
+        {icao: 'KSFO', iata: 'SFO', name: 'San Francisco Intl', city: 'San Francisco', state: 'CA'},
+        {icao: 'KSEA', iata: 'SEA', name: 'Seattle-Tacoma Intl', city: 'Seattle', state: 'WA'},
+        {icao: 'KLAS', iata: 'LAS', name: 'Harry Reid Intl', city: 'Las Vegas', state: 'NV'},
+        {icao: 'KMCO', iata: 'MCO', name: 'Orlando Intl', city: 'Orlando', state: 'FL'},
+        {icao: 'KMIA', iata: 'MIA', name: 'Miami Intl', city: 'Miami', state: 'FL'},
+        {icao: 'KPHX', iata: 'PHX', name: 'Phoenix Sky Harbor Intl', city: 'Phoenix', state: 'AZ'},
+        {icao: 'KIAH', iata: 'IAH', name: 'George Bush Intercontinental', city: 'Houston', state: 'TX'},
+        {icao: 'KBOS', iata: 'BOS', name: 'Boston Logan Intl', city: 'Boston', state: 'MA'},
+        {icao: 'KMSP', iata: 'MSP', name: 'Minneapolis-St Paul Intl', city: 'Minneapolis', state: 'MN'},
+        {icao: 'KDTW', iata: 'DTW', name: 'Detroit Metro Wayne County', city: 'Detroit', state: 'MI'},
+        {icao: 'KPHL', iata: 'PHL', name: 'Philadelphia Intl', city: 'Philadelphia', state: 'PA'},
+        {icao: 'KLGA', iata: 'LGA', name: 'LaGuardia', city: 'New York', state: 'NY'},
+        {icao: 'KBWI', iata: 'BWI', name: 'Baltimore/Washington Intl', city: 'Baltimore', state: 'MD'},
+        {icao: 'KSLC', iata: 'SLC', name: 'Salt Lake City Intl', city: 'Salt Lake City', state: 'UT'},
+        {icao: 'KSAN', iata: 'SAN', name: 'San Diego Intl', city: 'San Diego', state: 'CA'},
+        {icao: 'KDCA', iata: 'DCA', name: 'Reagan National', city: 'Washington', state: 'DC'},
+        {icao: 'KIAD', iata: 'IAD', name: 'Washington Dulles Intl', city: 'Washington', state: 'VA'},
+        {icao: 'KTPA', iata: 'TPA', name: 'Tampa Intl', city: 'Tampa', state: 'FL'},
+        {icao: 'KPDX', iata: 'PDX', name: 'Portland Intl', city: 'Portland', state: 'OR'},
+        {icao: 'KSTL', iata: 'STL', name: 'St Louis Lambert Intl', city: 'St Louis', state: 'MO'},
+        {icao: 'KMCI', iata: 'MCI', name: 'Kansas City Intl', city: 'Kansas City', state: 'MO'},
+        {icao: 'KCLT', iata: 'CLT', name: 'Charlotte Douglas Intl', city: 'Charlotte', state: 'NC'},
+        {icao: 'KAUS', iata: 'AUS', name: 'Austin-Bergstrom Intl', city: 'Austin', state: 'TX'},
+        {icao: 'KMDW', iata: 'MDW', name: 'Chicago Midway Intl', city: 'Chicago', state: 'IL'},
+        {icao: 'KCLE', iata: 'CLE', name: 'Cleveland Hopkins Intl', city: 'Cleveland', state: 'OH'},
+        {icao: 'KPIT', iata: 'PIT', name: 'Pittsburgh Intl', city: 'Pittsburgh', state: 'PA'},
+        {icao: 'KOAK', iata: 'OAK', name: 'Oakland Intl', city: 'Oakland', state: 'CA'},
+        {icao: 'PHNL', iata: 'HNL', name: 'Daniel K Inouye Intl', city: 'Honolulu', state: 'HI'},
+        {icao: 'PANC', iata: 'ANC', name: 'Ted Stevens Anchorage Intl', city: 'Anchorage', state: 'AK'},
+        // Additional Regional/GA Airports
+        {icao: 'KEWR', iata: 'EWR', name: 'Newark Liberty Intl', city: 'Newark', state: 'NJ'},
+        {icao: 'KMEM', iata: 'MEM', name: 'Memphis Intl', city: 'Memphis', state: 'TN'},
+        {icao: 'KBNA', iata: 'BNA', name: 'Nashville Intl', city: 'Nashville', state: 'TN'},
+        {icao: 'KRDU', iata: 'RDU', name: 'Raleigh-Durham Intl', city: 'Raleigh', state: 'NC'},
+        {icao: 'KSAT', iata: 'SAT', name: 'San Antonio Intl', city: 'San Antonio', state: 'TX'},
+        {icao: 'KSNA', iata: 'SNA', name: 'John Wayne', city: 'Santa Ana', state: 'CA'},
+        {icao: 'KSMF', iata: 'SMF', name: 'Sacramento Intl', city: 'Sacramento', state: 'CA'},
+        {icao: 'KONT', iata: 'ONT', name: 'Ontario Intl', city: 'Ontario', state: 'CA'},
+        {icao: 'KBUR', iata: 'BUR', name: 'Hollywood Burbank', city: 'Burbank', state: 'CA'},
+        {icao: 'KSJC', iata: 'SJC', name: 'Norman Y Mineta San Jose Intl', city: 'San Jose', state: 'CA'},
+        {icao: 'KHOU', iata: 'HOU', name: 'William P Hobby', city: 'Houston', state: 'TX'},
+        {icao: 'KDAL', iata: 'DAL', name: 'Dallas Love Field', city: 'Dallas', state: 'TX'},
+        {icao: 'KIND', iata: 'IND', name: 'Indianapolis Intl', city: 'Indianapolis', state: 'IN'},
+        {icao: 'KCVG', iata: 'CVG', name: 'Cincinnati/Northern Kentucky Intl', city: 'Cincinnati', state: 'OH'},
+        {icao: 'KCMH', iata: 'CMH', name: 'John Glenn Columbus Intl', city: 'Columbus', state: 'OH'},
+        {icao: 'KMKE', iata: 'MKE', name: 'Milwaukee Mitchell Intl', city: 'Milwaukee', state: 'WI'},
+        {icao: 'KOMA', iata: 'OMA', name: 'Eppley Airfield', city: 'Omaha', state: 'NE'},
+        {icao: 'KDSM', iata: 'DSM', name: 'Des Moines Intl', city: 'Des Moines', state: 'IA'},
+        {icao: 'KABQ', iata: 'ABQ', name: 'Albuquerque Intl Sunport', city: 'Albuquerque', state: 'NM'},
+        {icao: 'KTUS', iata: 'TUS', name: 'Tucson Intl', city: 'Tucson', state: 'AZ'},
+        {icao: 'KEL', iata: 'ELP', name: 'El Paso Intl', city: 'El Paso', state: 'TX'},
+        {icao: 'KBOI', iata: 'BOI', name: 'Boise Air Terminal', city: 'Boise', state: 'ID'},
+        {icao: 'KGEG', iata: 'GEG', name: 'Spokane Intl', city: 'Spokane', state: 'WA'},
+        {icao: 'KFAT', iata: 'FAT', name: 'Fresno Yosemite Intl', city: 'Fresno', state: 'CA'},
+        {icao: 'KRNO', iata: 'RNO', name: 'Reno-Tahoe Intl', city: 'Reno', state: 'NV'},
+        {icao: 'KBDL', iata: 'BDL', name: 'Bradley Intl', city: 'Hartford', state: 'CT'},
+        {icao: 'KPVD', iata: 'PVD', name: 'TF Green', city: 'Providence', state: 'RI'},
+        {icao: 'KALB', iata: 'ALB', name: 'Albany Intl', city: 'Albany', state: 'NY'},
+        {icao: 'KROC', iata: 'ROC', name: 'Greater Rochester Intl', city: 'Rochester', state: 'NY'},
+        {icao: 'KBUF', iata: 'BUF', name: 'Buffalo Niagara Intl', city: 'Buffalo', state: 'NY'},
+        {icao: 'KSYR', iata: 'SYR', name: 'Syracuse Hancock Intl', city: 'Syracuse', state: 'NY'},
+        {icao: 'KPBI', iata: 'PBI', name: 'Palm Beach Intl', city: 'West Palm Beach', state: 'FL'},
+        {icao: 'KFLL', iata: 'FLL', name: 'Fort Lauderdale-Hollywood Intl', city: 'Fort Lauderdale', state: 'FL'},
+        {icao: 'KRSW', iata: 'RSW', name: 'Southwest Florida Intl', city: 'Fort Myers', state: 'FL'},
+        {icao: 'KPNS', iata: 'PNS', name: 'Pensacola Intl', city: 'Pensacola', state: 'FL'},
+        {icao: 'KJAX', iata: 'JAX', name: 'Jacksonville Intl', city: 'Jacksonville', state: 'FL'},
+        {icao: 'KSAV', iata: 'SAV', name: 'Savannah/Hilton Head Intl', city: 'Savannah', state: 'GA'},
+        {icao: 'KGSO', iata: 'GSO', name: 'Piedmont Triad Intl', city: 'Greensboro', state: 'NC'},
+        {icao: 'KROA', iata: 'ROA', name: 'Roanoke-Blacksburg Regional', city: 'Roanoke', state: 'VA'},
+        {icao: 'KRIC', iata: 'RIC', name: 'Richmond Intl', city: 'Richmond', state: 'VA'},
+        {icao: 'KORF', iata: 'ORF', name: 'Norfolk Intl', city: 'Norfolk', state: 'VA'},
+        {icao: 'KLIT', iata: 'LIT', name: 'Bill and Hillary Clinton National', city: 'Little Rock', state: 'AR'},
+        {icao: 'KTUL', iata: 'TUL', name: 'Tulsa Intl', city: 'Tulsa', state: 'OK'},
+        {icao: 'KOKC', iata: 'OKC', name: 'Will Rogers World', city: 'Oklahoma City', state: 'OK'},
+        {icao: 'KICT', iata: 'ICT', name: 'Wichita Dwight D Eisenhower National', city: 'Wichita', state: 'KS'},
+        {icao: 'KFAR', iata: 'FAR', name: 'Hector Intl', city: 'Fargo', state: 'ND'},
+        {icao: 'KBIS', iata: 'BIS', name: 'Bismarck Municipal', city: 'Bismarck', state: 'ND'},
+        {icao: 'KFSD', iata: 'FSD', name: 'Sioux Falls Regional', city: 'Sioux Falls', state: 'SD'},
+        {icao: 'KMOT', iata: 'MOT', name: 'Minot Intl', city: 'Minot', state: 'ND'},
+        {icao: 'KBIL', iata: 'BIL', name: 'Billings Logan Intl', city: 'Billings', state: 'MT'},
+        {icao: 'KGTF', iata: 'GTF', name: 'Great Falls Intl', city: 'Great Falls', state: 'MT'},
+        {icao: 'KMSO', iata: 'MSO', name: 'Missoula Intl', city: 'Missoula', state: 'MT'},
+        {icao: 'KCHS', iata: 'CHS', name: 'Charleston Intl', city: 'Charleston', state: 'SC'},
+        {icao: 'KGPT', iata: 'GPT', name: 'Gulfport-Biloxi Intl', city: 'Gulfport', state: 'MS'},
+        {icao: 'KMOB', iata: 'MOB', name: 'Mobile Regional', city: 'Mobile', state: 'AL'},
+        {icao: 'KBHM', iata: 'BHM', name: 'Birmingham-Shuttlesworth Intl', city: 'Birmingham', state: 'AL'},
+        {icao: 'KLFT', iata: 'LFT', name: 'Lafayette Regional', city: 'Lafayette', state: 'LA'},
+        {icao: 'KBTR', iata: 'BTR', name: 'Baton Rouge Metropolitan', city: 'Baton Rouge', state: 'LA'},
+        {icao: 'KMSY', iata: 'MSY', name: 'Louis Armstrong New Orleans Intl', city: 'New Orleans', state: 'LA'},
+        {icao: 'KSHR', iata: 'SHR', name: 'Sheridan County', city: 'Sheridan', state: 'WY'},
+        {icao: 'KCPR', iata: 'CPR', name: 'Casper-Natrona County Intl', city: 'Casper', state: 'WY'},
+        {icao: 'KJAC', iata: 'JAC', name: 'Jackson Hole', city: 'Jackson', state: 'WY'},
+        {icao: 'KVPS', iata: 'VPS', name: 'Destin-Fort Walton Beach', city: 'Valparaiso', state: 'FL'},
+    ];
+
+    // Search airports using comprehensive database
+    async function searchAirports(query) {
+        if (!query || query.length < 2) {
+            hideDropdown();
+            return;
+        }
+
+        const searchQuery = query.toLowerCase();
+        const isIcaoFormat = /^[KP][A-Z]{0,3}$/i.test(query);
+
+        // If it's a complete 4-letter ICAO code, allow direct entry
+        if (isIcaoFormat && query.length === 4) {
+            hideDropdown();
+            return;
+        }
+
+        // Use comprehensive database if loaded, otherwise use fallback
+        const searchDatabase = allAirports.length > 0 ? allAirports : fallbackAirports;
+
+        // Search through airport database
+        const results = searchDatabase.filter(airport => {
+            const matches =
+                airport.name.toLowerCase().includes(searchQuery) ||
+                airport.city.toLowerCase().includes(searchQuery) ||
+                airport.state.toLowerCase().includes(searchQuery) ||
+                (airport.iata && airport.iata.toLowerCase().includes(searchQuery)) ||
+                airport.icao.toLowerCase().includes(searchQuery);
+            return matches;
+        });
+
+        if (results.length > 0) {
+            // Show top 10 results
+            airports = results.slice(0, 10).map(ap => ({
+                name: ap.name,
+                municipality: ap.city,
+                region: ap.state,
+                icao_code: ap.icao,
+                iata_code: ap.iata
+            }));
+            renderDropdown();
+        } else {
+            // CRITICAL: Clear stale results to prevent accidental selection
+            airports = [];
+            selectedIndex = -1;
+            dropdown.innerHTML = `
+                <div class="autocomplete-no-results">
+                    No matches found. Try typing an ICAO code directly (e.g., KMCI, KJFK)
+                </div>
+            `;
+            dropdown.classList.add('show');
+        }
+    }
+
+    // Initialize forecast time dropdown and load airports database when page loads
+    initializeForecastTimeDropdown();
+    updateHoursOptions(); // Initialize hours dropdown based on default forecast time
+    loadAirportsDatabase();
+
+    // Auto-load from URL query parameters if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const icaoParam = urlParams.get('icao');
+    const detailParam = urlParams.get('detail');
+    const hoursParam = urlParams.get('hours');
+
+    if (detailParam && (detailParam === 'aviation' || detailParam === 'full')) {
+        document.getElementById('detail').value = detailParam;
+    }
+
+    if (hoursParam) {
+        const validHours = [6, 12, 18, 25, 38];
+        if (validHours.includes(parseInt(hoursParam, 10))) {
+            document.getElementById('hours').value = hoursParam;
+        }
+    }
+
+    if (icaoParam && icaoParam.length === 4) {
+        document.getElementById('icao').value = icaoParam.toUpperCase();
+        // Fetch forecast after a short delay to ensure page is ready
+        setTimeout(() => {
+            fetchForecast();
+        }, 100);
+    }
+
+    // Update URL when detail view changes
+    document.getElementById('detail').addEventListener('change', function() {
+        const url = new URL(window.location);
+        url.searchParams.set('detail', this.value);
+        window.history.replaceState({}, '', url.toString());
+    });
+
+    // Update URL when hours changes
+    document.getElementById('hours').addEventListener('change', function() {
+        const url = new URL(window.location);
+        url.searchParams.set('hours', this.value);
+        window.history.replaceState({}, '', url.toString());
+    });
+
+    function showLoading() {
+        dropdown.innerHTML = '<div class="autocomplete-loading">Searching airports...</div>';
+        dropdown.classList.add('show');
+    }
+
+    function hideDropdown() {
+        dropdown.classList.remove('show');
+        airports = [];
+        selectedIndex = -1;
+    }
+
+    function renderDropdown() {
+        if (airports.length === 0) {
+            hideDropdown();
+            return;
+        }
+
+        dropdown.innerHTML = airports.map((airport, index) => {
+            const name = airport.name || 'Unknown Airport';
+            const city = airport.municipality || airport.city || '';
+            const state = airport.region || '';
+            const icao = airport.icao_code || airport.ident || '';
+            const iata = airport.iata_code ? ` (${airport.iata_code})` : '';
+
+            return `
+                <div class="autocomplete-item ${index === selectedIndex ? 'active' : ''}"
+                     data-index="${index}"
+                     data-icao="${icao}">
+                    <div class="airport-name">${name}${iata}</div>
+                    <div class="airport-details">
+                        ${city}${state ? ', ' + state : ''}
+                        <span class="airport-icao">${icao}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        dropdown.classList.add('show');
+
+        // Add click handlers
+        dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+            item.addEventListener('click', function() {
+                selectAirport(this.dataset.icao);
+            });
+        });
+    }
+
+    function selectAirport(icao) {
+        currentIcao = icao;
+        icaoInput.value = icao;
+        hideDropdown();
+        icaoInput.focus();
+    }
+
+    // Event listeners for autocomplete
+    icaoInput.addEventListener('input', function(e) {
+        const value = e.target.value.trim();
+
+        clearTimeout(searchTimeout);
+
+        // If it's a 4-letter code that looks like ICAO, allow direct entry
+        if (/^[KP][A-Z]{3}$/i.test(value)) {
+            currentIcao = value.toUpperCase();
+            hideDropdown();
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            searchAirports(value);
+        }, 300);
+    });
+
+    icaoInput.addEventListener('keydown', function(e) {
+        if (!dropdown.classList.contains('show')) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedIndex = Math.min(selectedIndex + 1, airports.length - 1);
+            renderDropdown();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedIndex = Math.max(selectedIndex - 1, 0);
+            renderDropdown();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (selectedIndex >= 0 && airports[selectedIndex]) {
+                selectAirport(airports[selectedIndex].icao_code || airports[selectedIndex].ident);
+            }
+        } else if (e.key === 'Escape') {
+            hideDropdown();
+        }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.autocomplete-container')) {
+            hideDropdown();
+        }
+    });
+
+    // Update hours dropdown based on forecast time selection
+    function updateHoursOptions() {
+        // No longer needed since we only show 25 and 38 hour options
+    }
+
+    async function fetchForecast() {
+        const icao = document.getElementById('icao').value.toUpperCase().trim();
+        const hours = parseInt(document.getElementById('hours').value);
+        const detail = document.getElementById('detail').value;
+        const status = document.getElementById('status');
+        const output = document.getElementById('output');
+        const btn = document.getElementById('fetchBtn');
+
+        output.innerHTML = '';
+
+        if (icao.length !== 4) {
+            status.innerHTML = '❌ Please enter a valid 4-letter ICAO code';
+            status.className = 'status error';
+            return;
+        }
+
+        btn.disabled = true;
+        status.innerHTML = `<span class="loading"></span> Fetching forecast for ${icao}...`;
+        status.className = 'status info';
+
+        try {
+            // Get the selected forecast time option
+            const forecastTimeSelect = document.getElementById('forecastTime');
+            const selectedOption = forecastTimeSelect && forecastTimeSelect.options ?
+                forecastTimeSelect.options[forecastTimeSelect.selectedIndex] : null;
+
+            // Fetch LAMP forecast and METAR observation in parallel
+            let lampUrl = API_URL;
+            if (selectedOption && selectedOption.dataset && selectedOption.dataset.runTime) {
+                lampUrl = `${API_URL}?run_time=${selectedOption.dataset.runTime}`;
+            }
+            const metarUrl = `${window.location.origin}/api/metar?icao=${icao}`;
+
+            const [lampResponse, metarResponse] = await Promise.all([
+                fetch(lampUrl),
+                fetch(metarUrl)
+            ]);
+
+            if (!lampResponse.ok) {
+                throw new Error(`LAMP fetch returned ${lampResponse.status}`);
+            }
+
+            const lampData = await lampResponse.text();
+            console.log('Received LAMP data, length:', lampData.length);
+
+            // Get model run time from response header
+            const modelRunTime = lampResponse.headers.get('X-Model-Run-Time');
+
+            // Try to fetch METAR but don't fail if it's unavailable
+            let metarObs = null;
+            if (metarResponse.ok) {
+                try {
+                    metarObs = await metarResponse.json();
+                    console.log('METAR observation:', metarObs);
+                } catch (e) {
+                    console.warn('Could not parse METAR:', e);
+                }
+            }
+
+            // Parse the LAMP data
+            const parsed = parseStation(lampData, icao, hours);
+
+            if (parsed.error) {
+                if (parsed.error === 'not_found') {
+                    status.innerHTML = `❌ Station ${icao} not found in bulletin`;
+                    status.className = 'status error';
+                } else {
+                    status.innerHTML = `❌ ${parsed.error}`;
+                    status.className = 'status error';
+                }
+            } else {
+                // Update URL to make it bookmarkable with all current settings
+                const url = new URL(window.location);
+                url.searchParams.set('icao', icao);
+                url.searchParams.set('detail', detail);
+                url.searchParams.set('hours', hours);
+                window.history.replaceState({ icao, detail, hours }, '', url.toString());
+
+                // Check if 38-hour data is available and update dropdown
+                const maxAvailableHours = parsed.fullHoursCount; // Use full bulletin length, not truncated
+                const hour38option = document.getElementById('hour38option');
+                let requestedHours = hours;
+
+                if (maxAvailableHours >= 38) {
+                    hour38option.style.display = 'block';
+                } else {
+                    hour38option.style.display = 'none';
+                    // If 38-hour currently selected but fewer available, cap to 25
+                    if (hours === 38) {
+                        requestedHours = Math.min(25, maxAvailableHours);
+                        document.getElementById('hours').value = requestedHours;
+                    }
+                }
+
+                // Slice the full data down to the requested hours before rendering
+                const slicedData = sliceDataToHours(parsed.data, requestedHours);
+
+                // Find station coordinates from airport database
+                const searchDatabase = allAirports.length > 0 ? allAirports : fallbackAirports;
+                const stationAirport = searchDatabase.find(a => a.icao === icao || a.iata === icao);
+                const stationLat = stationAirport?.lat || null;
+                const stationLon = stationAirport?.lon || null;
+
+                // Fetch timezone before rendering
+                let tzInfo = { offset: 0, name: 'Station Local Time', abbr: 'Local' };
+                if (stationLat && stationLon) {
+                    try {
+                        const tzResponse = await fetch(`/api/timezone?lat=${stationLat}&lon=${stationLon}`);
+                        if (tzResponse.ok) {
+                            const tz = await tzResponse.json();
+                            tzInfo.offset = tz.offset_hours || 0;
+                            tzInfo.name = (tz.timezone || 'UTC').replace(/_/g, ' ');
+                            // Get timezone abbreviation from the timezone name
+                            tzInfo.abbr = getTimezoneBreviation(tz.timezone || 'UTC');
+                        }
+                    } catch (e) {
+                        console.warn('Could not fetch timezone:', e);
+                    }
+                }
+
+                renderForecast(parsed.stationId, parsed.stationName, slicedData, detail, modelRunTime, 0, metarObs, stationLat, stationLon, tzInfo);
+            }
+
+        } catch (error) {
+            console.error('Fetch error:', error);
+            status.innerHTML = `❌ Error: ${error.message}. Make sure the backend server is running.`;
+            status.className = 'status error';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    // Slice full data down to requested hours
+    function sliceDataToHours(fullData, requestedHours) {
+        const slicedData = { hours: fullData.hours.slice(0, requestedHours) };
+        const elements = ['TMP', 'DPT', 'WDR', 'WSP', 'WGS', 'CLD', 'CIG', 'VIS',
+                        'PPO', 'PCO', 'P06', 'P12', 'TYP', 'OBV', 'POS', 'POZ', 'CCG', 'CVS', 'CC1', 'PC1',
+                        'P01', 'CP1', 'LP1', 'LC1'];
+        elements.forEach(el => {
+            slicedData[el] = fullData[el] ? fullData[el].slice(0, requestedHours) : [];
+        });
+        return slicedData;
+    }
+
+    function parseStation(text, icao, maxHours) {
+        const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+            .split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+        const regex = new RegExp(`^${icao}\\s+`, 'i');
+        let startIdx = -1;
+
+        for (let i = 0; i < lines.length; i++) {
+            if (regex.test(lines[i])) {
+                startIdx = i;
+                break;
+            }
+        }
+
+        if (startIdx === -1) return { error: 'not_found' };
+
+        let endIdx = lines.length;
+        for (let i = startIdx + 1; i < lines.length; i++) {
+            if (/^[A-Z0-9]{4}\s+/.test(lines[i]) && lines[i].includes('GFS LAMP')) {
+                endIdx = i;
+                break;
+            }
+        }
+
+        const stationLines = lines.slice(startIdx, endIdx);
+        const match = stationLines[0].match(/^([A-Z0-9]{4})\s+(.+?)\s+GFS\s+LAMP/i);
+        if (!match) return { error: 'Parse error' };
+
+        const stationId = match[1];
+        const stationName = match[2];
+
+        const data = { hours: [] };
+        const elements = ['TMP', 'DPT', 'WDR', 'WSP', 'WGS', 'CLD', 'CIG', 'VIS',
+                        'PPO', 'PCO', 'P06', 'P12', 'TYP', 'OBV', 'POS', 'POZ', 'CCG', 'CVS', 'CC1', 'PC1',
+                        'P01', 'CP1', 'LP1', 'LC1'];
+        elements.forEach(el => data[el] = []);
+
+        let utcFound = false;
+        let fullHoursCount = 0;
+
+        for (const line of stationLines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue; // Skip empty lines
+
+            // Find UTC line to determine hours count
+            if (trimmed.startsWith('UTC ')) {
+                const parts = trimmed.split(/\s+/).filter(p => p);
+                fullHoursCount = Math.max(0, parts.length - 1); // -1 for "UTC" label
+                data.hours = parts.slice(1);
+                utcFound = true;
+                continue;
+            }
+
+            if (utcFound && fullHoursCount > 0) {
+                // Try each element, exact match only
+                for (const el of elements) {
+                    // Exact match: element name followed by space
+                    const pattern = el + ' ';
+                    if (trimmed.startsWith(pattern)) {
+                        // Extract values using fixed-column format (3 chars per value)
+                        const valueStr = trimmed.substring(pattern.length);
+                        const result = [];
+
+                        // LAMP uses 3-character fixed-width columns for values
+                        let colIdx = 0;
+                        for (let i = 0; i < fullHoursCount; i++) {
+                            // Extract 3-char chunk, trim whitespace, take first 3 non-space chars
+                            const chunk = valueStr.substring(colIdx, colIdx + 3).trim();
+                            result.push(chunk || '');
+                            colIdx += 3;
+                        }
+
+                        data[el] = result;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!utcFound) return { error: 'No UTC line found' };
+        return { stationId, stationName, data, fullHoursCount };
+    }
+
+    function decodeCIG(cat) {
+        return {'1': '<200', '2': '200-400', '3': '500-900', '4': '1000-1900',
+                '5': '2000-3000', '6': '3100-6500', '7': '6600-12K', '8': '>12K'}[cat] || 'N/A';
+    }
+
+    function decodeVIS(cat) {
+        return {'1': '<1/2', '2': '1/2-<1', '3': '1-<2', '4': '2-<3',
+                '5': '3-5', '6': '6', '7': '>6'}[cat] || 'N/A';
+    }
+
+    function decodeCLD(code) {
+        return {'CL': 'Clear', 'FW': 'Few', 'SC': 'Scattered', 'BK': 'Broken', 'OV': 'Overcast'}[code] || code;
+    }
+
+    function getFlightCat(cigCat, visCat) {
+        const cigFC = {'1':'IFR','2':'IFR','3':'IFR','4':'MVFR','5':'MVFR','6':'VFR','7':'VFR','8':'VFR'}[cigCat];
+        const visFC = {'1':'IFR','2':'IFR','3':'IFR','4':'IFR','5':'MVFR','6':'VFR','7':'VFR'}[visCat];
+        const rank = {'IFR': 3, 'MVFR': 2, 'VFR': 1};
+        return (rank[cigFC] || 0) > (rank[visFC] || 0) ? cigFC : visFC;
+    }
+
+    function degToDirection(deg) {
+        if (!deg || deg === '99' || deg === '00') return 'VRB';
+        const degrees = parseInt(deg) * 10;
+        const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+        const index = Math.round(degrees / 22.5) % 16;
+        return directions[index];
+    }
+
+    function calculateRH(tempF, dewpointF) {
+        const tempC = (5.0/9.0) * (tempF - 32.0);
+        const dewpointC = (5.0/9.0) * (dewpointF - 32.0);
+        const es = 6.11 * Math.pow(10, (7.5 * tempC / (237.7 + tempC)));
+        const e = 6.11 * Math.pow(10, (7.5 * dewpointC / (237.7 + dewpointC)));
+        const rh = (e / es) * 100.0;
+        return Math.round(rh);
+    }
+
+    function calculateApparentTemp(tempF, rh, windSpeedKt) {
+        if (tempF <= 50) {
+            const windMph = windSpeedKt * 1.15078;
+            if (windMph <= 3) return Math.round(tempF);
+            const wc = 35.74 + (0.6215 * tempF) - (35.75 * Math.pow(windMph, 0.16)) +
+                       (0.4275 * tempF * Math.pow(windMph, 0.16));
+            return Math.round(wc);
+        } else if (tempF >= 80) {
+            const t = tempF;
+            const rh_val = rh;
+            const hi = -42.379 +
+                       (2.04901523 * t) +
+                       (10.14333127 * rh_val) -
+                       (0.22475541 * t * rh_val) -
+                       (0.00683783 * t * t) -
+                       (0.05481717 * rh_val * rh_val) +
+                       (0.00122874 * t * t * rh_val) +
+                       (0.00085282 * t * rh_val * rh_val) -
+                       (0.00000199 * t * t * rh_val * rh_val);
+            return Math.round(hi);
+        } else {
+            return Math.round(tempF);
+        }
+    }
+
+    function validateProbability(val) {
+        const num = parseInt(val);
+        if (isNaN(num)) return NaN;
+        if ((num >= 0 && num <= 100) || num === 999) return num;
+        return NaN;
+    }
+
+    function hasPrecipitationData(data) {
+        if (!data.PPO || !Array.isArray(data.PPO)) return false;
+        for (let val of data.PPO) {
+            const p = String(val).trim();
+            if (p && p !== '-' && p !== '999') {
+                const intVal = parseInt(p, 10);
+                if (!isNaN(intVal) && intVal >= 0 && intVal <= 100) return true;
+            }
+        }
+        return false;
+    }
+
+    function getWindChillColor(tempF) {
+        if (tempF <= -50) return 'style="background: #ff4444; color: white;"';
+        else if (tempF <= -35) return 'style="background: #ff8800; color: white;"';
+        else if (tempF <= -20) return 'style="background: #ffdd00; color: black;"';
+        else if (tempF <= 0) return 'style="background: #4488ff; color: white;"';
+        return '';
+    }
+
+    function convertUTCToLocal(utcHour) {
+        const now = new Date();
+        const utcDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), utcHour, 0, 0));
+        const localHour = utcDate.getHours();
+        const localMinute = utcDate.getMinutes();
+        return `${localHour.toString().padStart(2, '0')}:${localMinute.toString().padStart(2, '0')}`;
+    }
+
+    function getUTCDateAndHour(baseModelRunTime, forecastHour) {
+        if (!baseModelRunTime) return forecastHour + 'Z';
+        const year = parseInt(baseModelRunTime.substring(0, 4));
+        const month = parseInt(baseModelRunTime.substring(4, 6));
+        const day = parseInt(baseModelRunTime.substring(6, 8));
+        const baseHour = parseInt(baseModelRunTime.substring(8, 10));
+        const baseDate = new Date(Date.UTC(year, month - 1, day, baseHour, 0, 0));
+        const forecastDate = new Date(baseDate.getTime() + forecastHour * 60 * 60 * 1000);
+        const forecastMonth = String(forecastDate.getUTCMonth() + 1).padStart(2, '0');
+        const forecastDay = String(forecastDate.getUTCDate()).padStart(2, '0');
+        const forecastHourStr = String(forecastDate.getUTCHours()).padStart(2, '0');
+        return `${forecastMonth}-${forecastDay}<br>${forecastHourStr}Z`;
+    }
+
+    function getLocalDateAndTime(baseModelRunTime, forecastHour, stationTzOffsetHours = 0) {
+        if (!baseModelRunTime) return convertUTCToLocal(forecastHour);
+        const year = parseInt(baseModelRunTime.substring(0, 4));
+        const month = parseInt(baseModelRunTime.substring(4, 6));
+        const day = parseInt(baseModelRunTime.substring(6, 8));
+        const baseHour = parseInt(baseModelRunTime.substring(8, 10));
+        const baseDate = new Date(Date.UTC(year, month - 1, day, baseHour, 0, 0));
+        const forecastDate = new Date(baseDate.getTime() + forecastHour * 60 * 60 * 1000);
+        const stationLocalDate = new Date(forecastDate.getTime() + stationTzOffsetHours * 60 * 60 * 1000);
+        const forecastMonth = String(stationLocalDate.getUTCMonth() + 1).padStart(2, '0');
+        const forecastDay = String(stationLocalDate.getUTCDate()).padStart(2, '0');
+        const forecastHourStr = String(stationLocalDate.getUTCHours()).padStart(2, '0');
+        const forecastMin = String(stationLocalDate.getUTCMinutes()).padStart(2, '0');
+        return `${forecastMonth}-${forecastDay}<br>${forecastHourStr}:${forecastMin}`;
+    }
+
+    function getLocalTimezone() {
+        try {
+            const parts = new Intl.DateTimeFormat('en-US', {
+                timeZoneName: 'short',
+                hour: 'numeric'
+            }).formatToParts(new Date());
+            const tzPart = parts.find(part => part.type === 'timeZoneName');
+            return tzPart ? tzPart.value : 'Local Time';
+        } catch (e) {
+            return 'Local Time';
+        }
+    }
+
+    function getTimezoneBreviation(tzName) {
+        if (!tzName) return 'Local';
+        try {
+            const date = new Date();
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: tzName,
+                timeZoneName: 'short'
+            });
+            const parts = formatter.formatToParts(date);
+            const tzPart = parts.find(p => p.type === 'timeZoneName');
+            return tzPart ? tzPart.value : 'Local';
+        } catch (e) {
+            const parts = tzName.split('/');
+            if (parts.length === 2) {
+                const city = parts[1];
+                const abbrevMap = {
+                    'New_York': 'EST/EDT',
+                    'Chicago': 'CST/CDT',
+                    'Denver': 'MST/MDT',
+                    'Los_Angeles': 'PST/PDT',
+                    'Anchorage': 'AKST/AKDT',
+                    'Honolulu': 'HST'
+                };
+                return abbrevMap[city] || city.replace(/_/g, ' ');
+            }
+            return 'Local';
+        }
+    }
+
+    function renderForecast(stationId, stationName, data, detail, modelRunTime, hoursAgo, metarObs, stationLat, stationLon, tzInfo) {
+        const status = document.getElementById('status');
+        const output = document.getElementById('output');
+        const hours = data.hours;
+
+        let runTimeDisplay = '';
+        if (modelRunTime) {
+            const year = modelRunTime.substring(0, 4);
+            const month = modelRunTime.substring(4, 6);
+            const day = modelRunTime.substring(6, 8);
+            const hour = modelRunTime.substring(8, 10);
+            const dateStr = `${year}-${month}-${day}`;
+            runTimeDisplay = `Forecast from ${hour}Z ${dateStr}`;
+            if (hoursAgo > 0) {
+                runTimeDisplay += ` (${hoursAgo} hr${hoursAgo > 1 ? 's' : ''} ago)`;
+            }
+        }
+
+        const stationTzOffset = tzInfo?.offset || 0;
+        const tzAbbr = tzInfo?.abbr || 'Local';
+        const tzDisplay = tzAbbr === 'Local' ? 'Station Local Time' : `Station Local (${tzAbbr})`;
+
+        const currentHeader = metarObs ? '<th style="width: 80px; background: #d3d3d3; color: #000;">Current</th>' : '';
+        const currentLocalTime = metarObs ? `<th style="width: 80px; font-size: 0.85em; color: #000; background: #d3d3d3;">Now</th>` : '';
+
+        let html = `
+            <div class="station-header">
+                ${stationId} - ${stationName}
+                <div style="font-size: 0.6em; color: #4A6572; margin-top: 5px;">
+                    ${hours.length} hour forecast | ${new Date().toLocaleTimeString()}
+                    ${runTimeDisplay ? `<br>${runTimeDisplay}` : ''}
+                </div>
+            </div>
+            <table>
+                <tr><th style="width: 120px;">Element</th>${currentHeader}${hours.map((h, i) => `<th style="font-size: 0.85em;">${getUTCDateAndHour(modelRunTime, i)}</th>`).join('')}</tr>
+                <tr style="background: #F5F0E8;"><th style="font-size: 0.85em; color: white;">${tzDisplay}</th>${currentLocalTime}${hours.map((h, i) => `<th style="font-size: 0.85em; color: white;">${getLocalDateAndTime(modelRunTime, i, stationTzOffset)}</th>`).join('')}</tr>
+                <tr class="section-header"><th colspan="${hours.length + (metarObs ? 2 : 1)}">FLIGHT CONDITIONS</th></tr>
+        `;
+
+        let currentFC = '';
+        if (metarObs) {
+            const fc = metarObs.flight_category || 'UNKN';
+            const isLIFR = fc === 'LIFR';
+            let fcClass = fc.toLowerCase();
+            if (isLIFR) fcClass = 'ifr low-ifr';
+            currentFC = `<td class="${fcClass}" style="background: #d3d3d3;">${fc}</td>`;
+        }
+        const fcRow = hours.map((_, i) => {
+            const fc = getFlightCat(data.CIG[i], data.VIS[i]);
+            const isLIFR = ['1','2'].includes(data.CIG[i]) || ['1','2'].includes(data.VIS[i]);
+            return `<td class="${isLIFR ? 'ifr low-ifr' : fc.toLowerCase()}">${isLIFR ? 'LIFR' : fc}</td>`;
+        }).join('');
+        html += `<tr><th>Flight Cat</th>${currentFC}${fcRow}</tr>`;
+
+        let currentCeiling = '';
+        if (metarObs) {
+            let ceil = '-';
+            if (metarObs.ceiling !== null && metarObs.ceiling !== undefined && typeof metarObs.ceiling === 'number') {
+                ceil = Math.round(metarObs.ceiling);
+            }
+            currentCeiling = `<td style="background: #d3d3d3;">${ceil}</td>`;
+        }
+        html += `<tr><th>Ceiling (ft)</th>${currentCeiling}${hours.map((_, i) => `<td>${decodeCIG(data.CIG[i])}</td>`).join('')}</tr>`;
+
+        let currentVis = '';
+        if (metarObs) {
+            let vis = '-';
+            if (metarObs.visibility !== null && metarObs.visibility !== undefined && typeof metarObs.visibility === 'number') {
+                vis = metarObs.visibility.toFixed(1);
+            }
+            currentVis = `<td style="background: #d3d3d3;">${vis}</td>`;
+        }
+        html += `<tr><th>Visibility (SM)</th>${currentVis}${hours.map((_, i) => `<td>${decodeVIS(data.VIS[i])}</td>`).join('')}</tr>`;
+
+        let currentSky = '';
+        if (metarObs) {
+            const sky = metarObs.sky_cover ? metarObs.sky_cover : '-';
+            currentSky = `<td style="background: #d3d3d3;">${sky}</td>`;
+        }
+        html += `<tr><th>Sky Cover</th>${currentSky}${hours.map((_, i) => `<td>${decodeCLD(data.CLD[i])}</td>`).join('')}</tr>`;
+
+        if (detail === 'full') {
+            html += `<tr class="section-header"><th colspan="${hours.length + (metarObs ? 2 : 1)}">TEMPERATURE & WIND</th></tr>`;
+
+            if (data.TMP[0]) {
+                let currentTemp = '';
+                if (metarObs && metarObs.temp !== null && metarObs.temp !== undefined) {
+                    const tempF = Math.round(metarObs.temp * 9/5 + 32);
+                    const cls = tempF >= 85 ? 'temp-hot' : tempF <= 32 ? 'temp-cold' : '';
+                    currentTemp = `<td class="${cls}" style="background: #d3d3d3;">${tempF}°F</td>`;
+                } else if (metarObs) {
+                    currentTemp = `<td style="background: #d3d3d3;"></td>`;
+                }
+                html += `<tr><th>Temperature</th>${currentTemp}${hours.map((_, i) => {
+                    const t = data.TMP[i];
+                    if (!t || t === '99' || t === '999') return '<td>-</td>';
+                    const cls = parseInt(t) >= 85 ? 'temp-hot' : parseInt(t) <= 32 ? 'temp-cold' : '';
+                    return `<td class="${cls}">${t}°F</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.DPT[0]) {
+                let currentDpt = '';
+                if (metarObs && metarObs.dewpoint !== null && metarObs.dewpoint !== undefined) {
+                    const dptF = Math.round(metarObs.dewpoint * 9/5 + 32);
+                    currentDpt = `<td style="background: #d3d3d3;">${dptF}°F</td>`;
+                } else if (metarObs) {
+                    currentDpt = `<td style="background: #d3d3d3;"></td>`;
+                }
+                html += `<tr><th>Dewpoint</th>${currentDpt}${hours.map((_, i) => {
+                    const d = data.DPT[i];
+                    if (!d || d === '99' || d === '999') return '<td>-</td>';
+                    const spread = data.TMP[i] && data.TMP[i] !== '99' && data.TMP[i] !== '999' ? parseInt(data.TMP[i]) - parseInt(d) : null;
+                    const cls = spread !== null && spread <= 3 ? 'high-prob' : '';
+                    return `<td class="${cls}">${d}°F</td>`;
+                }).join('')}</tr>`;
+            }
+
+            let currentRH = '';
+            if (metarObs && metarObs.relative_humidity !== null && metarObs.relative_humidity !== undefined) {
+                const cls = metarObs.relative_humidity >= 90 ? 'high-prob' : '';
+                currentRH = `<td class="${cls}" style="background: #d3d3d3;">${metarObs.relative_humidity}%</td>`;
+            } else if (metarObs) {
+                currentRH = `<td style="background: #d3d3d3;"></td>`;
+            }
+            html += `<tr><th>Rel Humidity</th>${currentRH}${hours.map((_, i) => {
+                const t = data.TMP[i];
+                const d = data.DPT[i];
+                if (!t || t === '99' || t === '999' || !d || d === '99' || d === '999') return '<td>-</td>';
+                const rh = calculateRH(parseInt(t), parseInt(d));
+                const cls = rh >= 90 ? 'high-prob' : '';
+                return `<td class="${cls}">${rh}%</td>`;
+            }).join('')}</tr>`;
+
+            let currentAT = '';
+            if (metarObs && metarObs.temp !== null && metarObs.wind_speed !== null && metarObs.relative_humidity !== null) {
+                const tempF = Math.round(metarObs.temp * 9/5 + 32);
+                const at = calculateApparentTemp(tempF, metarObs.relative_humidity, metarObs.wind_speed);
+                const colorStyle = getWindChillColor(at);
+                if (colorStyle) {
+                    currentAT = `<td ${colorStyle}>${at}°F</td>`;
+                } else {
+                    currentAT = `<td style="background: #d3d3d3;">${at}°F</td>`;
+                }
+            } else if (metarObs) {
+                currentAT = `<td style="background: #d3d3d3;"></td>`;
+            }
+            html += `<tr><th>Apparent Temp</th>${currentAT}${hours.map((_, i) => {
+                const t = data.TMP[i];
+                const d = data.DPT[i];
+                const w = data.WSP[i];
+                if (!t || t === '99' || t === '999' || !d || d === '99' || d === '999' || !w || w === '99') return '<td>-</td>';
+                const rh = calculateRH(parseInt(t), parseInt(d));
+                const at = calculateApparentTemp(parseInt(t), rh, parseInt(w));
+                const colorStyle = getWindChillColor(at);
+                return colorStyle ? `<td ${colorStyle}>${at}°F</td>` : `<td>${at}°F</td>`;
+            }).join('')}</tr>`;
+
+            let currentWdir = '';
+            if (metarObs && metarObs.wind_dir !== null && metarObs.wind_dir !== undefined) {
+                const dir = degToDirection(metarObs.wind_dir);
+                currentWdir = `<td style="background: #d3d3d3;">${dir}</td>`;
+            } else if (metarObs) {
+                currentWdir = `<td style="background: #d3d3d3;"></td>`;
+            }
+            html += `<tr><th>Wind Direction</th>${currentWdir}${hours.map((_, i) => {
+                const dir = data.WDR[i];
+                if (!dir || dir === '99') return '<td>-</td>';
+                return `<td>${degToDirection(dir)}</td>`;
+            }).join('')}</tr>`;
+
+            let currentWspd = '';
+            if (metarObs && metarObs.wind_speed !== null && metarObs.wind_speed !== undefined) {
+                const cls = metarObs.wind_speed >= 20 ? 'high-prob' : '';
+                currentWspd = `<td class="${cls}" style="background: #d3d3d3;">${metarObs.wind_speed} kt</td>`;
+            } else if (metarObs) {
+                currentWspd = `<td style="background: #d3d3d3;"></td>`;
+            }
+            html += `<tr><th>Wind Speed</th>${currentWspd}${hours.map((_, i) => {
+                const spd = data.WSP[i];
+                if (!spd || spd === '99') return '<td>-</td>';
+                const cls = parseInt(spd) >= 20 ? 'high-prob' : '';
+                return `<td class="${cls}">${spd} kt</td>`;
+            }).join('')}</tr>`;
+
+            let currentWgst = '';
+            if (metarObs && metarObs.wind_gust !== null && metarObs.wind_gust !== undefined) {
+                const cls = metarObs.wind_gust >= 25 ? 'high-prob' : '';
+                currentWgst = `<td class="${cls}" style="background: #d3d3d3;">${metarObs.wind_gust} kt</td>`;
+            } else if (metarObs) {
+                currentWgst = `<td style="background: #d3d3d3;"></td>`;
+            }
+            html += `<tr><th>Wind Gust</th>${currentWgst}${hours.map((_, i) => {
+                const gst = data.WGS[i];
+                if (!gst || gst === 'NG') return '<td>-</td>';
+                const cls = parseInt(gst) >= 25 ? 'high-prob' : '';
+                return `<td class="${cls}">${gst} kt</td>`;
+            }).join('')}</tr>`;
+
+            html += `<tr class="section-header"><th colspan="${hours.length + (metarObs ? 2 : 1)}">CONDITIONAL & PRECIPITATION</th></tr>`;
+
+            if (data.CCG && data.CCG[0]) {
+                let currentCCG = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Cond Ceiling</th>${currentCCG}${hours.map((_, i) => {
+                    const c = data.CCG[i];
+                    if (!c || c === '9') return '<td>-</td>';
+                    return `<td>${decodeCIG(c)}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.CVS && data.CVS[0]) {
+                let currentCVS = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Cond Visibility</th>${currentCVS}${hours.map((_, i) => {
+                    const v = data.CVS[i];
+                    if (!v || v === '9') return '<td>-</td>';
+                    return `<td>${decodeVIS(v)}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.OBV && data.OBV[0]) {
+                let currentOBV = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Obstructions</th>${currentOBV}${hours.map((_, i) => {
+                    const o = data.OBV[i];
+                    if (!o || o === 'N') return '<td>-</td>';
+                    return `<td>${o}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.PPO && data.PPO[0]) {
+                let currentPPO = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Precip Prob</th>${currentPPO}${hours.map((_, i) => {
+                    const p = String(data.PPO[i]).trim();
+                    if (!p || p === '-' || p === '') return '<td>-</td>';
+                    const intVal = parseInt(p, 10);
+                    if (isNaN(intVal) || intVal < 0 || intVal > 999) return '<td>-</td>';
+                    const display = intVal === 999 ? '999' : `${intVal}%`;
+                    return `<td class="${intVal >= 50 && intVal !== 999 ? 'high-prob' : ''}">${display}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.P06 && data.P06.some(p => p && p.trim() !== '')) {
+                let currentP06 = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>6-Hr POP</th>${currentP06}${hours.map((_, i) => {
+                    const p = String(data.P06[i]).trim();
+                    if (!p || p === '-' || p === '') return '<td>-</td>';
+                    const intVal = parseInt(p, 10);
+                    if (isNaN(intVal) || intVal < 0 || intVal > 999) return '<td>-</td>';
+                    const display = intVal === 999 ? '999' : `${intVal}%`;
+                    return `<td class="${intVal >= 50 && intVal !== 999 ? 'high-prob' : ''}">${display}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.PCO && data.PCO[0]) {
+                let currentPCO = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Precip Occur</th>${currentPCO}${hours.map((_, i) => {
+                    const p = data.PCO[i];
+                    if (p === 'Y') return '<td class="precip-yes">Yes</td>';
+                    if (p === 'N') return '<td>No</td>';
+                    return '<td>-</td>';
+                }).join('')}</tr>`;
+            }
+
+            const hasRecipData = hasPrecipitationData(data);
+
+            if (hasRecipData && data.TYP && data.TYP[0]) {
+                let currentTYP = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Precip Type</th>${currentTYP}${hours.map((_, i) => {
+                    const ppo = String(data.PPO[i] || '').trim();
+                    const ppoVal = parseInt(ppo, 10);
+                    if (ppoVal === 0) return '<td>-</td>';
+                    const t = data.TYP[i];
+                    if (!t || t === 'N') return '<td>-</td>';
+                    const types = {'R': 'Rain', 'S': 'Snow', 'Z': 'Frz Rain', 'I': 'Ice Pellets'};
+                    return `<td>${types[t] || t}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.P12 && data.P12.some(p => p && p.trim() !== '')) {
+                let currentP12 = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>12-Hr POP</th>${currentP12}${hours.map((_, i) => {
+                    const p = data.P12[i];
+                    if (!p || p.trim() === '') return '<td>-</td>';
+                    const val = validateProbability(p);
+                    if (isNaN(val)) return '<td>-</td>';
+                    const display = val === 999 ? '999' : `${val}%`;
+                    return `<td class="${val >= 50 && val !== 999 ? 'high-prob' : ''}">${display}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (hasRecipData && data.POS && data.POS.some(p => p && p !== '9' && p.trim() !== '')) {
+                let currentPOS = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Snow Prob</th>${currentPOS}${hours.map((_, i) => {
+                    const ppo = String(data.PPO[i] || '').trim();
+                    const ppoVal = parseInt(ppo, 10);
+                    if (ppoVal === 0) return '<td>-</td>';
+                    const p = data.POS[i];
+                    if (!p || p === '9' || p.trim() === '') return '<td>-</td>';
+                    const val = validateProbability(p);
+                    if (isNaN(val)) return '<td>-</td>';
+                    const display = val === 999 ? '999' : `${val}%`;
+                    return `<td class="${val >= 50 && val !== 999 ? 'high-prob' : ''}">${display}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (hasRecipData && data.POZ && data.POZ.some(p => p && p !== '9' && p.trim() !== '')) {
+                let currentPOZ = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Frz Precip Prob</th>${currentPOZ}${hours.map((_, i) => {
+                    const ppo = String(data.PPO[i] || '').trim();
+                    const ppoVal = parseInt(ppo, 10);
+                    if (ppoVal === 0) return '<td>-</td>';
+                    const p = data.POZ[i];
+                    if (!p || p === '9' || p.trim() === '') return '<td>-</td>';
+                    const val = validateProbability(p);
+                    if (isNaN(val)) return '<td>-</td>';
+                    const display = val === 999 ? '999' : `${val}%`;
+                    return `<td class="${val >= 50 && val !== 999 ? 'high-prob' : ''}">${display}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            html += `<tr class="section-header"><th colspan="${hours.length + (metarObs ? 2 : 1)}">CONVECTION & LIGHTNING</th></tr>`;
+
+            if (data.CC1 && data.CC1.some(c => c && c.trim() !== '')) {
+                let currentCC1 = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Convection Pot</th>${currentCC1}${hours.map((_, i) => {
+                    const c = data.CC1[i];
+                    if (!c || c.trim() === '') return '<td>-</td>';
+                    const levels = {'N': 'None', 'L': 'Low', 'M': 'Medium', 'H': 'High'};
+                    const cls = c === 'H' ? 'high-prob' : '';
+                    return `<td class="${cls}">${levels[c] || c}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.PC1 && data.PC1.some(p => p && p.trim() !== '')) {
+                let currentPC1 = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Lightning Pot</th>${currentPC1}${hours.map((_, i) => {
+                    const p = data.PC1[i];
+                    if (!p || p.trim() === '') return '<td>-</td>';
+                    const levels = {'N': 'None', 'L': 'Low', 'M': 'Medium', 'H': 'High'};
+                    const cls = p === 'H' ? 'high-prob' : '';
+                    return `<td class="${cls}">${levels[p] || p}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            html += `<tr class="section-header"><th colspan="${hours.length + (metarObs ? 2 : 1)}">ADDITIONAL PROBABILITIES</th></tr>`;
+
+            if (data.P01 && data.P01.some(p => p && p.trim() !== '')) {
+                let currentP01 = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>1-Hr Precip Prob</th>${currentP01}${hours.map((_, i) => {
+                    const p = data.P01[i];
+                    if (!p || p.trim() === '') return '<td>-</td>';
+                    const val = validateProbability(p);
+                    if (isNaN(val)) return '<td>-</td>';
+                    const display = val === 999 ? '999' : `${val}%`;
+                    return `<td class="${val >= 50 && val !== 999 ? 'high-prob' : ''}">${display}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.CP1 && data.CP1.some(c => c && c.trim() !== '')) {
+                let currentCP1 = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Convection Prob</th>${currentCP1}${hours.map((_, i) => {
+                    const c = data.CP1[i];
+                    if (!c || c.trim() === '') return '<td>-</td>';
+                    const val = validateProbability(c);
+                    if (isNaN(val)) return '<td>-</td>';
+                    const display = val === 999 ? '999' : `${val}%`;
+                    return `<td class="${val >= 50 && val !== 999 ? 'high-prob' : ''}">${display}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.LP1 && data.LP1.some(l => l && l.trim() !== '')) {
+                let currentLP1 = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Lightning Prob</th>${currentLP1}${hours.map((_, i) => {
+                    const l = data.LP1[i];
+                    if (!l || l.trim() === '') return '<td>-</td>';
+                    const val = validateProbability(l);
+                    if (isNaN(val)) return '<td>-</td>';
+                    const display = val === 999 ? '999' : `${val}%`;
+                    return `<td class="${val >= 50 && val !== 999 ? 'high-prob' : ''}">${display}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.LC1 && data.LC1.some(l => l && l.trim() !== '')) {
+                let currentLC1 = metarObs ? `<td style="background: #d3d3d3;">-</td>` : '';
+                html += `<tr><th>Cond Lightning</th>${currentLC1}${hours.map((_, i) => {
+                    const l = data.LC1[i];
+                    if (l === 'Y') return '<td class="precip-yes">Yes</td>';
+                    if (l === 'N') return '<td>No</td>';
+                    return '<td>-</td>';
+                }).join('')}</tr>`;
+            }
+        }
+
+        if (detail === 'aviation') {
+            html += `<tr class="section-header"><th colspan="${hours.length + (metarObs ? 2 : 1)}">TEMPERATURE & WIND</th></tr>`;
+
+            if (data.TMP[0]) {
+                let currentTemp = '';
+                if (metarObs && metarObs.temp !== null && metarObs.temp !== undefined) {
+                    const tempF = Math.round(metarObs.temp * 9/5 + 32);
+                    const cls = tempF >= 85 ? 'temp-hot' : tempF <= 32 ? 'temp-cold' : '';
+                    currentTemp = `<td class="${cls}" style="background: #d3d3d3;">${tempF}°F</td>`;
+                } else if (metarObs) {
+                    currentTemp = `<td style="background: #d3d3d3;"></td>`;
+                }
+                html += `<tr><th>Temperature</th>${currentTemp}${hours.map((_, i) => {
+                    const t = data.TMP[i];
+                    if (!t || t === '99' || t === '999') return '<td>-</td>';
+                    const cls = parseInt(t) >= 85 ? 'temp-hot' : parseInt(t) <= 32 ? 'temp-cold' : '';
+                    return `<td class="${cls}">${t}°F</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.DPT[0]) {
+                let currentDpt = '';
+                if (metarObs && metarObs.dewpoint !== null && metarObs.dewpoint !== undefined) {
+                    const dptF = Math.round(metarObs.dewpoint * 9/5 + 32);
+                    currentDpt = `<td style="background: #d3d3d3;">${dptF}°F</td>`;
+                } else if (metarObs) {
+                    currentDpt = `<td style="background: #d3d3d3;"></td>`;
+                }
+                html += `<tr><th>Dewpoint</th>${currentDpt}${hours.map((_, i) => {
+                    const d = data.DPT[i];
+                    if (!d || d === '99' || d === '999') return '<td>-</td>';
+                    const spread = data.TMP[i] && data.TMP[i] !== '99' && data.TMP[i] !== '999' ? parseInt(data.TMP[i]) - parseInt(d) : null;
+                    const cls = spread !== null && spread <= 3 ? 'high-prob' : '';
+                    return `<td class="${cls}">${d}°F</td>`;
+                }).join('')}</tr>`;
+            }
+
+            let currentRHav = '';
+            if (metarObs && metarObs.relative_humidity !== null && metarObs.relative_humidity !== undefined) {
+                const cls = metarObs.relative_humidity >= 90 ? 'high-prob' : '';
+                currentRHav = `<td class="${cls}" style="background: #d3d3d3;">${metarObs.relative_humidity}%</td>`;
+            } else if (metarObs) {
+                currentRHav = `<td style="background: #d3d3d3;"></td>`;
+            }
+            html += `<tr><th>Rel Humidity</th>${currentRHav}${hours.map((_, i) => {
+                const t = data.TMP[i];
+                const d = data.DPT[i];
+                if (!t || t === '99' || t === '999' || !d || d === '99' || d === '999') return '<td>-</td>';
+                const rh = calculateRH(parseInt(t), parseInt(d));
+                const cls = rh >= 90 ? 'high-prob' : '';
+                return `<td class="${cls}">${rh}%</td>`;
+            }).join('')}</tr>`;
+
+            let currentATav = '';
+            if (metarObs && metarObs.temp !== null && metarObs.wind_speed !== null && metarObs.relative_humidity !== null) {
+                const tempF = Math.round(metarObs.temp * 9/5 + 32);
+                const at = calculateApparentTemp(tempF, metarObs.relative_humidity, metarObs.wind_speed);
+                const colorStyle = getWindChillColor(at);
+                if (colorStyle) {
+                    currentATav = `<td ${colorStyle}>${at}°F</td>`;
+                } else {
+                    currentATav = `<td style="background: #d3d3d3;">${at}°F</td>`;
+                }
+            } else if (metarObs) {
+                currentATav = `<td style="background: #d3d3d3;"></td>`;
+            }
+            html += `<tr><th>Apparent Temp</th>${currentATav}${hours.map((_, i) => {
+                const t = data.TMP[i];
+                const d = data.DPT[i];
+                const w = data.WSP[i];
+                if (!t || t === '99' || t === '999' || !d || d === '99' || d === '999' || !w || w === '99') return '<td>-</td>';
+                const rh = calculateRH(parseInt(t), parseInt(d));
+                const at = calculateApparentTemp(parseInt(t), rh, parseInt(w));
+                const colorStyle = getWindChillColor(at);
+                return colorStyle ? `<td ${colorStyle}>${at}°F</td>` : `<td>${at}°F</td>`;
+            }).join('')}</tr>`;
+
+            let currentWdirav = '';
+            if (metarObs && metarObs.wind_dir !== null && metarObs.wind_dir !== undefined) {
+                const dir = degToDirection(metarObs.wind_dir);
+                currentWdirav = `<td style="background: #d3d3d3;">${dir}</td>`;
+            } else if (metarObs) {
+                currentWdirav = `<td style="background: #d3d3d3;"></td>`;
+            }
+            html += `<tr><th>Wind Direction</th>${currentWdirav}${hours.map((_, i) => {
+                const dir = data.WDR[i];
+                if (!dir || dir === '99') return '<td>-</td>';
+                return `<td>${degToDirection(dir)}</td>`;
+            }).join('')}</tr>`;
+
+            let currentWspdav = '';
+            if (metarObs && metarObs.wind_speed !== null && metarObs.wind_speed !== undefined) {
+                const cls = metarObs.wind_speed >= 20 ? 'high-prob' : '';
+                currentWspdav = `<td class="${cls}" style="background: #d3d3d3;">${metarObs.wind_speed} kt</td>`;
+            } else if (metarObs) {
+                currentWspdav = `<td style="background: #d3d3d3;"></td>`;
+            }
+            html += `<tr><th>Wind Speed</th>${currentWspdav}${hours.map((_, i) => {
+                const spd = data.WSP[i];
+                if (!spd || spd === '99') return '<td>-</td>';
+                const cls = parseInt(spd) >= 20 ? 'high-prob' : '';
+                return `<td class="${cls}">${spd} kt</td>`;
+            }).join('')}</tr>`;
+
+            let currentWgstav = '';
+            if (metarObs && metarObs.wind_gust !== null && metarObs.wind_gust !== undefined) {
+                const cls = metarObs.wind_gust >= 25 ? 'high-prob' : '';
+                currentWgstav = `<td class="${cls}" style="background: #d3d3d3;">${metarObs.wind_gust} kt</td>`;
+            } else if (metarObs) {
+                currentWgstav = `<td style="background: #d3d3d3;"></td>`;
+            }
+            html += `<tr><th>Wind Gust</th>${currentWgstav}${hours.map((_, i) => {
+                const gst = data.WGS[i];
+                if (!gst || gst === 'NG') return '<td>-</td>';
+                const cls = parseInt(gst) >= 25 ? 'high-prob' : '';
+                return `<td class="${cls}">${gst} kt</td>`;
+            }).join('')}</tr>`;
+
+            html += `<tr class="section-header"><th colspan="${hours.length + (metarObs ? 2 : 1)}">CONDITIONAL & PRECIPITATION</th></tr>`;
+
+            if (data.CCG && data.CCG[0]) {
+                let currentCCGav = metarObs ? `<td style="background: #d3d3d3;"></td>` : '';
+                html += `<tr><th>Cond Ceiling</th>${currentCCGav}${hours.map((_, i) => {
+                    const c = data.CCG[i];
+                    if (!c || c === '9') return '<td>-</td>';
+                    return `<td>${decodeCIG(c)}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.CVS && data.CVS[0]) {
+                let currentCVSav = metarObs ? `<td style="background: #d3d3d3;"></td>` : '';
+                html += `<tr><th>Cond Visibility</th>${currentCVSav}${hours.map((_, i) => {
+                    const v = data.CVS[i];
+                    if (!v || v === '9') return '<td>-</td>';
+                    return `<td>${decodeVIS(v)}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.OBV && data.OBV[0]) {
+                let currentOBVav = metarObs ? `<td style="background: #d3d3d3;"></td>` : '';
+                html += `<tr><th>Obstructions</th>${currentOBVav}${hours.map((_, i) => {
+                    const o = data.OBV[i];
+                    if (!o || o === 'N') return '<td>-</td>';
+                    return `<td>${o}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.P01 && data.P01.some(p => p && p.trim() !== '')) {
+                let currentP01av = metarObs ? `<td style="background: #d3d3d3;"></td>` : '';
+                html += `<tr><th>1-Hr Precip Prob</th>${currentP01av}${hours.map((_, i) => {
+                    const p = String(data.P01[i]).trim();
+                    if (!p || p === '-' || p === '') return '<td>-</td>';
+                    const val = validateProbability(p);
+                    if (isNaN(val)) return '<td>-</td>';
+                    const display = val === 999 ? '999' : `${val}%`;
+                    return `<td class="${val >= 50 && val !== 999 ? 'high-prob' : ''}">${display}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.P06 && data.P06.some(p => p && p.trim() !== '')) {
+                let currentP06av = metarObs ? `<td style="background: #d3d3d3;"></td>` : '';
+                html += `<tr><th>6-Hr POP</th>${currentP06av}${hours.map((_, i) => {
+                    const p = String(data.P06[i]).trim();
+                    if (!p || p === '-' || p === '') return '<td>-</td>';
+                    const intVal = parseInt(p, 10);
+                    if (isNaN(intVal) || intVal < 0 || intVal > 999) return '<td>-</td>';
+                    const display = intVal === 999 ? '999' : `${intVal}%`;
+                    return `<td class="${intVal >= 50 && intVal !== 999 ? 'high-prob' : ''}">${display}</td>`;
+                }).join('')}</tr>`;
+            }
+
+            if (data.TYP && data.TYP[0]) {
+                let currentTYPav = metarObs ? `<td style="background: #d3d3d3;"></td>` : '';
+                html += `<tr><th>Precip Type</th>${currentTYPav}${hours.map((_, i) => {
+                    const t = data.TYP[i];
+                    if (!t || t === 'N') return '<td>-</td>';
+                    const types = {'R': 'Rain', 'S': 'Snow', 'Z': 'Frz Rain', 'I': 'Ice Pellets'};
+                    return `<td>${types[t] || t}</td>`;
+                }).join('')}</tr>`;
+            }
+        }
+
+        // Add bottom time row for reference
+        html += `<tr class="bottom-time-row" style="background: #F5F0E8;"><th style="font-size: 0.85em;">${tzDisplay}</th>${currentLocalTime}${hours.map((h, i) => `<th style="font-size: 0.85em;">${getLocalDateAndTime(modelRunTime, i, stationTzOffset)}</th>`).join('')}</tr>`;
+        html += `<tr style="background: #F5F0E8;"><th>Element</th>${currentHeader}${hours.map((h, i) => `<th style="font-size: 0.85em;">${getUTCDateAndHour(modelRunTime, i)}</th>`).join('')}</tr>`;
+        html += '</table>';
+
+        status.innerHTML = `✅ Forecast loaded for <strong>${stationId}</strong>`;
+        status.className = 'status success';
+        output.innerHTML = html;
+
+        document.body.classList.add('has-table');
+        const sliderContainer = document.getElementById('scroll-slider-container');
+        const slider = document.getElementById('scroll-slider');
+        sliderContainer.style.display = 'block';
+
+        setTimeout(() => {
+            const maxScroll = output.scrollWidth - output.clientWidth;
+            slider.max = maxScroll > 0 ? maxScroll : 100;
+            slider.value = 0;
+        }, 50);
+    }
+
+    // Sync output scroll with slider
+    const output = document.getElementById('output');
+    const slider = document.getElementById('scroll-slider');
+
+    output.addEventListener('scroll', () => {
+        slider.value = output.scrollLeft;
+    });
+
+    slider.addEventListener('input', () => {
+        output.scrollLeft = slider.value;
+    });
+
+    document.getElementById('icao').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') fetchForecast();
+    });
+</script>
+
+</body>
+</html>
